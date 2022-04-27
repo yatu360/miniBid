@@ -1,19 +1,21 @@
 const express = require('express')
 const router = express.Router()
 
-const Items = require('../models/Items')
-const Auct = require('../models/Auctions')
+const itemsModel = require('../models/Items')
+const auctionsModel = require('../models/Auctions')
 
 const verifyToken = require('../verifyToken')
 
-const timerOperations = require('../helper/TimerOperations')
+const { initializeTimeCalc } = require('../helper/TimerOperations')
+const { setTimeLeft } = require('../helper/TimerOperations')
+const { auctionEnd } = require('../helper/TimerOperations')
 
-const moment = require('moment')
+
 
 
 //Post (Create Data)
 router.post('/addItem', verifyToken, async(req, res)=>{
-    const postData = new Items({
+    const postData = new itemsModel({
         ItemTitle:req.body.ItemTitle,
         isItemConditionNew:req.body.isItemConditionNew,
         ItemDesc:req.body.ItemDesc,
@@ -21,14 +23,11 @@ router.post('/addItem', verifyToken, async(req, res)=>{
         Owner: req.user
     })
 
-    var start_date = moment()
-    var end_date = moment(req.body.Endtime, 'YYYY-MM-DD HH:mm:ss')
-    var duration = moment.duration(end_date.diff(start_date));
+    const duration = initializeTimeCalc(req.body)
 
-    const PostAuct = new Auct({
+    const PostAuct = new auctionsModel({
         ItemInformation: postData,
-        timeleft: "Years: "+duration._data.years+" Months: "+duration._data.months+" Days: "+duration._data.days+" Hours: "+duration._data.hours+
-                    " Minutes: "+duration._data.minutes+" Seconds: "+duration._data.seconds
+        timeleft: setTimeLeft(duration)
     })
 
     try{
@@ -46,7 +45,7 @@ router.post('/addItem', verifyToken, async(req, res)=>{
 router.get('/getAllItems', verifyToken, async(req, res)=>{
 
     try{
-        const items = await Items.find()
+        const items = await itemsModel.find()
         res.send(items)
     }catch(err){
         res.status(400).send({message:err})
@@ -56,33 +55,30 @@ router.get('/getAllItems', verifyToken, async(req, res)=>{
 //Get all Auctions
 router.get('/getAllAuctions', verifyToken, async(req, res)=>{
     try{
-        const AuctionItems = await Auct.find()
+        const auctionItems = await auctionsModel.find()
 
-        for(const x of AuctionItems){
+        for(const auctionItem of auctionItems){
 
-            var y = await Items.findById(x.ItemInformation)
-            var start_date = moment()
-            var end_date = moment(y.Endtime, 'YYYY-MM-DD HH:mm:ss')
-            var duration = moment.duration(end_date.diff(start_date));
+            var item = await itemsModel.findById(auctionItem.ItemInformation)
+            const duration = initializeTimeCalc(item)
             if(duration._milliseconds>0){ 
-            await Auct.updateOne(
-                {_id:x._id},
+            await auctionsModel.updateOne(
+                {_id:auctionItem._id},
                 {$set:{
-                    timeleft: "Years: "+duration._data.years+" Months: "+duration._data.months+" Days: "+duration._data.days+" Hours: "+duration._data.hours+
-                    " Minutes: "+duration._data.minutes+" Seconds: "+duration._data.seconds
+                    timeleft: setTimeLeft(duration)
                     },
 
                 }
             )
             }
             else{
-                timerOperations.actionEnd(x)
+                auctionEnd(auctionItem)
             }
 
         }
 
 
-        return res.send(AuctionItems)
+        return res.send(auctionItems)
     }catch(err){
         return res.status(400).send({message:err})
     }
@@ -92,7 +88,7 @@ router.get('/getAllAuctions', verifyToken, async(req, res)=>{
 //Get Item by id
 router.get('/getItemById/:itemId', verifyToken, async(req, res)=>{
     try{
-    const getItem = await Items.findById(req.params.itemId)
+    const getItem = await itemsModel.findById(req.params.itemId)
     res.send(getItem)
 
     }catch(err){
@@ -106,30 +102,27 @@ router.get('/getItemById/:itemId', verifyToken, async(req, res)=>{
 
 //Update
 router.patch('/bid/:itemId', verifyToken, async(req, res)=>{
-    const itemData = new Auct({
+    const itemData = new auctionsModel({
        highestBid:req.body.highestBid
     })
     try{
 
-        const getItem = await Items.findById(req.params.itemId)
-        const getAuct = await Auct.findOne({ItemInformation: getItem})
+        const getItem = await itemsModel.findById(req.params.itemId)
+        const getAuct = await auctionsModel.findOne({ItemInformation: getItem})
         
         // if (req.user.username === getItem.author){
         //     res.status(400).send({message: 'You cannot bid on your own items'})
         // }
         if (getAuct.highestBid<itemData.highestBid){
 
-            var start_date = moment()
-            var end_date = moment(getItem.Endtime, 'YYYY-MM-DD HH:mm:ss')
-            var duration = moment.duration(end_date.diff(start_date));
+            const duration = initializeTimeCalc(getItem)
 
-        const updatePostById = await Auct.updateOne(
+        const updatePostById = await auctionsModel.updateOne(
             {_id:getAuct._id},
             {$set:{
                 highestBidder: req.user.username,
                 highestBid:req.body.highestBid,
-                timeleft: "Years: "+duration._data.years+" Months: "+duration._data.months+" Days: "+duration._data.days+" Hours: "+duration._data.hours+
-                " Minutes: "+duration._data.minutes+" Seconds: "+duration._data.seconds
+                timeleft: setTimeLeft(duration)
                 },
             $push:{
                 BidHistory:{
