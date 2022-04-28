@@ -52,39 +52,6 @@ router.get('/getAllItems', verifyToken, async(req, res)=>{
     }
 })
 
-//Get all Auctions
-router.get('/getAllAuctions', verifyToken, async(req, res)=>{
-    try{
-        const auctionItems = await auctionsModel.find()
-
-        for(const auctionItem of auctionItems){
-
-            var item = await itemsModel.findById(auctionItem.ItemInformation)
-            const duration = initializeTimeCalc(item)
-            if(duration._milliseconds>0){ 
-            await auctionsModel.updateOne(
-                {_id:auctionItem._id},
-                {$set:{
-                    timeleft: setTimeLeft(duration)
-                    },
-
-                }
-            )
-            }
-            else{
-                auctionEnd(auctionItem)
-            }
-
-        }
-
-
-        return res.send(auctionItems)
-    }catch(err){
-        return res.status(400).send({message:err})
-    }
-})
-
-
 //Get Item by id
 router.get('/getItemById/:itemId', verifyToken, async(req, res)=>{
     try{

@@ -7,9 +7,11 @@ require('dotenv/config')
 app.use(bodyParser.json())
 
 const itemsRoute = require('./routes/items')
+const auctionRoute = require('./routes/auctions')
 const authRoute = require('./routes/auth')
 
 app.use('/api/items', itemsRoute)
+app.use('/api/auctions', auctionRoute)
 app.use('/api/user', authRoute)
 
 
