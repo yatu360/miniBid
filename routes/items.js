@@ -102,17 +102,16 @@ router.get('/getItemById/:itemId', verifyToken, async(req, res)=>{
 
 //Update
 router.patch('/bid/:itemId', verifyToken, async(req, res)=>{
+    console.log("hello")
     const itemData = new auctionsModel({
        highestBid:req.body.highestBid
     })
     try{
-
         const getItem = await itemsModel.findById(req.params.itemId)
         const getAuct = await auctionsModel.findOne({ItemInformation: getItem})
-        
-        // if (req.user.username === getItem.author){
-        //     res.status(400).send({message: 'You cannot bid on your own items'})
-        // }
+        if (req.user._id === getItem.Owner.toString()){
+            return res.status(400).send({message: 'You cannot bid on your own items'})
+        }
         if (getAuct.highestBid<itemData.highestBid){
 
             const duration = initializeTimeCalc(getItem)

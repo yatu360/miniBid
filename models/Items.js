@@ -6,7 +6,7 @@ const ItemsSchema  = mongoose.Schema({
     isItemConditionNew:{type: Boolean, default: false},
     ItemDesc:{type:String,required:true},
     Endtime:{type:Date,required:true},
-    Owner: [{type:mongoose.Schema.Types.ObjectId,ref:'users'}]
+    Owner: {type:mongoose.Schema.Types.ObjectId,ref:'users'}
 });
 
 module.exports = mongoose.model('items',ItemsSchema)
