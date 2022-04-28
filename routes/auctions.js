@@ -43,6 +43,48 @@ router.get('/getAllAuctions', verifyToken, async(req, res)=>{
     }
 })
 
+//Update
+router.patch('/bid/:itemId', verifyToken, async(req, res)=>{
+    console.log("hello")
+    const itemData = new auctionsModel({
+       highestBid:req.body.highestBid
+    })
+    try{
+        const getItem = await itemsModel.findById(req.params.itemId)
+        const getAuct = await auctionsModel.findOne({ItemInformation: getItem})
+        if (req.user._id === getItem.Owner.toString()){
+            return res.status(400).send({message: 'You cannot bid on your own items'})
+        }
+        if (getAuct.highestBid<itemData.highestBid){
+
+            const duration = initializeTimeCalc(getItem)
+
+        const updatePostById = await auctionsModel.updateOne(
+            {_id:getAuct._id},
+            {$set:{
+                highestBidder: req.user.username,
+                highestBid:req.body.highestBid,
+                timeleft: setTimeLeft(duration)
+                },
+            $push:{
+                BidHistory:{
+                    Bidder: req.user.username,
+                    amount:req.body.highestBid
+                }
+            }
+            }
+        )
+        res.send(updatePostById)
+        }
+        else{
+            res.send("Please input a bid amount higher than "+getAuct.highestBid)
+        }
+
+    }catch(err){
+        res.send({message:err})
+    }
+})
+
 
 
 
