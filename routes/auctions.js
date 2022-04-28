@@ -12,9 +12,9 @@ const { auctionEnd } = require('../helper/TimerOperations')
 
 
 //Get all Auctions
-router.get('/getAllAuctions', verifyToken, async(req, res)=>{
+router.get('/getAuctions', verifyToken, async(req, res)=>{
     try{
-        const auctionItems = await auctionsModel.find()
+        const auctionItems = await auctionsModel.find().select('-highestBidder')
 
         for(const auctionItem of auctionItems){
 
@@ -26,41 +26,37 @@ router.get('/getAllAuctions', verifyToken, async(req, res)=>{
                 {$set:{
                     timeleft: setTimeLeft(duration)
                     },
-
                 }
-            )
-            }
+            )}
             else{
                 auctionEnd(auctionItem)
             }
-
         }
-
-
         return res.send(auctionItems)
+
     }catch(err){
         return res.status(400).send({message:err})
     }
 })
 
 //Update
-router.patch('/bid/:itemId', verifyToken, async(req, res)=>{
+router.patch('/bid/:auctionId', verifyToken, async(req, res)=>{
     console.log("hello")
-    const itemData = new auctionsModel({
+    const bidData = new auctionsModel({
        highestBid:req.body.highestBid
     })
     try{
-        const getItem = await itemsModel.findById(req.params.itemId)
-        const getAuct = await auctionsModel.findOne({ItemInformation: getItem})
-        if (req.user._id === getItem.Owner.toString()){
+        const getAuction = await auctionsModel.findById(req.params.auctionId).populate('ItemInformation')
+        //const getItem = await itemsModel.findOne(getAuction.ItemInformation)
+        if (req.user._id === getAuction.ItemInformation.Owner.toString()){
             return res.status(400).send({message: 'You cannot bid on your own items'})
         }
-        if (getAuct.highestBid<itemData.highestBid){
+        if (getAuction.highestBid<bidData.highestBid){
 
-            const duration = initializeTimeCalc(getItem)
+            const duration = initializeTimeCalc(getAuction.ItemInformation)
 
         const updatePostById = await auctionsModel.updateOne(
-            {_id:getAuct._id},
+            {_id:getAuction._id},
             {$set:{
                 highestBidder: req.user.username,
                 highestBid:req.body.highestBid,
@@ -77,7 +73,7 @@ router.patch('/bid/:itemId', verifyToken, async(req, res)=>{
         res.send(updatePostById)
         }
         else{
-            res.send("Please input a bid amount higher than "+getAuct.highestBid)
+            res.send("Please input a bid amount higher than "+getAuction.highestBid)
         }
 
     }catch(err){

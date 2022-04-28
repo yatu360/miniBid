@@ -8,7 +8,6 @@ const verifyToken = require('../verifyToken')
 
 const { initializeTimeCalc } = require('../helper/TimerOperations')
 const { setTimeLeft } = require('../helper/TimerOperations')
-const { auctionEnd } = require('../helper/TimerOperations')
 
 
 
