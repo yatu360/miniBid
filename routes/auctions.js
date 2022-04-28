@@ -39,6 +39,33 @@ router.get('/getAuctions', verifyToken, async(req, res)=>{
     }
 })
 
+
+//Get auctioned item details
+router.get('/getAuction/:auctionId', verifyToken, async(req, res)=>{
+    try{
+        const auctionItem = await auctionsModel.findById(req.params.auctionId).populate('ItemInformation').select('-highestBidder')
+            const duration = initializeTimeCalc(auctionItem.ItemInformation)
+            if (duration._milliseconds>0) { 
+                await auctionsModel.updateOne(
+                    {_id:auctionItem._id},
+                    {$set:{
+                        timeleft: setTimeLeft(duration)
+                        },
+                    }
+                )
+            }
+            else{
+                auctionEnd(auctionItem)
+            }
+            return res.send(auctionItem)
+        }
+
+
+    catch(err){
+        return res.status(400).send({message:err})
+    }
+})
+
 //Update
 router.patch('/bid/:auctionId', verifyToken, async(req, res)=>{
     console.log("hello")

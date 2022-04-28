@@ -14,8 +14,8 @@ const timerOperations ={
         await Auct.updateOne(
             {_id:auction._id},
             {$set:{
-                timeleft: "Years: "+00 +" Months: "+00+" Days: "+00+" Hours: "+00+
-                " Minutes: "+00+" Seconds: "+00,
+                timeleft: "Years:"+00 +", Months:"+00+", Days:"+00+", Hours:"+00+
+                ", Minutes:"+00+", Seconds:"+00,
                 isOpen: false,
                 Winner: auction.highestBidder
                 },
@@ -24,8 +24,8 @@ const timerOperations ={
     },
 
     setTimeLeft(duration){
-        return "Years: "+duration._data.years+" Months: "+duration._data.months+" Days: "+duration._data.days+" Hours: "+duration._data.hours+
-        " Minutes: "+duration._data.minutes+" Seconds: "+duration._data.seconds
+        return "Years:"+duration._data.years+", Months:"+duration._data.months+", Days:"+duration._data.days+", Hours:"+duration._data.hours+
+        ", Minutes:"+duration._data.minutes+", Seconds:"+duration._data.seconds
     },
 
     initializeTimeCalc(item){
