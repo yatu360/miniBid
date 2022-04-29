@@ -6,7 +6,7 @@ const auctionsModel = require('../models/Auctions')
 
 const verifyToken = require('../verifyToken')
 
-const { initializeTimeCalc } = require('../helper/TimerOperations')
+const { calculateTimeLeft } = require('../helper/TimerOperations')
 const { setTimeLeft } = require('../helper/TimerOperations')
 
 
@@ -22,7 +22,7 @@ router.post('/addItem', verifyToken, async(req, res)=>{
         Owner: req.user
     })
 
-    const duration = initializeTimeCalc(req.body)
+    const duration = calculateTimeLeft(req.body)
 
     const PostAuct = new auctionsModel({
         ItemInformation: postData,

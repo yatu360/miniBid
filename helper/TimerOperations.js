@@ -1,10 +1,4 @@
-const express = require('express')
-const router = express.Router()
-
-const Items = require('../models/Items')
-const Auct = require('../models/Auctions')
-
-const verifyToken = require('../verifyToken')
+const auctionsModel = require('../models/Auctions')
 
 const moment = require('moment')
 
@@ -28,10 +22,27 @@ const timerOperations ={
         ", Minutes:"+duration._data.minutes+", Seconds:"+duration._data.seconds
     },
 
-    initializeTimeCalc(item){
+    calculateTimeLeft(item){
         var start_date = moment()
         var end_date = moment(item.Endtime, 'YYYY-MM-DD HH:mm:ss')
         return moment.duration(end_date.diff(start_date));
+    },
+
+    async updateTimer(item, auctionItem){
+        const duration = timerOperations.calculateTimeLeft(item)
+        if(duration._milliseconds>0){
+            await auctionsModel.updateOne(
+                {_id:auctionItem._id},
+                {$set:{
+                    timeleft: timerOperations.setTimeLeft(duration), 
+                    },
+                }
+            )
+            console.log(timerOperations.setTimeLeft(duration)) 
+            }
+            else{
+                timerOperations.auctionEnd(auctionItem)
+            }
     }
 
 
