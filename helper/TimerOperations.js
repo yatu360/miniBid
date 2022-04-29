@@ -5,7 +5,7 @@ const moment = require('moment')
 const timerOperations ={
 
     async auctionEnd (auction){
-        await Auct.updateOne(
+        await auctionsModel.updateOne(
             {_id:auction._id},
             {$set:{
                 timeleft: "Years:"+00 +", Months:"+00+", Days:"+00+", Hours:"+00+

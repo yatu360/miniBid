@@ -49,7 +49,9 @@ router.patch('/bid/:auctionId', verifyToken, async(req, res)=>{
     })
     try{
         const getAuction = await auctionsModel.findById(req.params.auctionId).populate('ItemInformation')
+        
         const duration = calculateTimeLeft(getAuction.ItemInformation)
+        
         const message = bidValidations(req.user._id, getAuction, bidData, duration)
 
         if (message){
@@ -75,6 +77,17 @@ router.patch('/bid/:auctionId', verifyToken, async(req, res)=>{
     }catch(err){
         res.send({message:err})
     }
+})
+
+//Get auctioned item details
+router.get('/getBidHistory/:auctionId', verifyToken, async(req, res)=>{
+    try{
+        const auctionItem = await auctionsModel.findById(req.params.auctionId)
+        return res.send(auctionItem.BidHistory)
+    }
+    catch(err){
+        return res.status(400).send({message:err})
+    }  
 })
 
 
