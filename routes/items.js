@@ -6,9 +6,12 @@ const auctionsModel = require('../models/Auctions')
 
 const verifyToken = require('../verifyToken')
 
-const { calculateTimeLeft } = require('../helper/TimerOperations')
-const { setTimeLeft } = require('../helper/TimerOperations')
+const { calculateTimeLeft, 
+        setTimeLeft, 
+        openAuctionTimerUpdate 
+    } = require('../helper/TimerOperations')
 
+const {reAuctionValidations} = require('../helper/InputValidations')
 
 
 
@@ -62,6 +65,19 @@ router.get('/getItemById/:itemId', verifyToken, async(req, res)=>{
     }
 })
 
+//Get Item by id
+router.get('/getSoldItems', verifyToken, async(req, res)=>{
+    try{
+        
+        await openAuctionTimerUpdate()
+
+        return res.send(await itemsModel.find({isSold: true}))
+
+    }catch(err){
+    res.send({message:err})
+    }
+})
+
 
 router.patch('/reAuction/:itemId', verifyToken, async(req, res)=>{
     const postData = new itemsModel({
@@ -71,15 +87,13 @@ router.patch('/reAuction/:itemId', verifyToken, async(req, res)=>{
         const getItem = await itemsModel.findById(req.params.itemId)
         
         var duration = calculateTimeLeft(getItem)
+       
+        const message = reAuctionValidations(req.user._id, getItem, postData, duration)
 
-        if (duration._milliseconds > 0 ){
-            return res.send("Cannot be reauctioned while bidding is in progress")
-        }
-        else if (getItem.isSold == true){
-            return res.send("Cannot reauction sold item")
+        if (message){
+            return res.status(400).send({message: message})
         }
    
-
         const updatePostById = await itemsModel.findByIdAndUpdate(req.params.itemId,
             {
                 Endtime:postData.Endtime
