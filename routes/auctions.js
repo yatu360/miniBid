@@ -12,15 +12,15 @@ const {bidValidations} = require('../helper/BidOperations')
 
 
 //Get all Auctions
-router.get('/getAuctions', verifyToken, async(req, res)=>{
+router.get('/getOpenAuctions', verifyToken, async(req, res)=>{
     try{
-        const auctionItems = await auctionsModel.find()
+        const auctionItems = await auctionsModel.find({isOpen: true})
 
         for(const auctionItem of auctionItems){
             const item = await itemsModel.findById(auctionItem.ItemInformation)
             await updateTimer(item, auctionItem)
         }
-        return res.send(await auctionsModel.find().select('-highestBidder'))
+        return res.send(await auctionsModel.find({isOpen: true}).select('-highestBidder'))
 
     }catch(err){
         return res.status(400).send({message:err})
@@ -62,7 +62,7 @@ router.patch('/bid/:auctionId', verifyToken, async(req, res)=>{
             {_id:getAuction._id},
             {$set:{
                 highestBidder: req.user.username,
-                highestBid:req.body.highestBid,
+                highestBid:bidData.highestBid,
                 timeleft: setTimeLeft(duration)
                 },
             $push:{

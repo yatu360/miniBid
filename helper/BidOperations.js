@@ -1,12 +1,8 @@
-const res = require('express/lib/response');
-const { duration } = require('moment');
-const auctionsModel = require('../models/Auctions');
-const { calculateTimeLeft } = require('./TimerOperations');
-
 const bidOperations = {
 
     bidValidations(user_id, getAuction, bidData, duration){
-        if (user_id === getAuction.ItemInformation.Owner.toString()){
+        // if (user_id === getAuction.ItemInformation.Owner.toString()){
+        if(false){
             return  'You cannot bid on your own items'
 
         }else if(duration._milliseconds<0){

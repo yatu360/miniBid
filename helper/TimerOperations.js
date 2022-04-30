@@ -1,5 +1,5 @@
 const auctionsModel = require('../models/Auctions')
-
+const itemsModel = require('../models/Items')
 const moment = require('moment')
 
 const timerOperations ={
@@ -15,6 +15,13 @@ const timerOperations ={
                 },
             }
         )
+        if (auction.highestBidder != null){
+            await itemsModel.findByIdAndUpdate(auction.ItemInformation._id.toString(),
+                {
+                isSold: true
+                }
+            )
+        }
     },
 
     setTimeLeft(duration){
@@ -41,7 +48,7 @@ const timerOperations ={
             console.log(timerOperations.setTimeLeft(duration)) 
             }
             else{
-                timerOperations.auctionEnd(auctionItem)
+                await timerOperations.auctionEnd(auctionItem)
             }
     }
 

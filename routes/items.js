@@ -62,9 +62,46 @@ router.get('/getItemById/:itemId', verifyToken, async(req, res)=>{
     }
 })
 
+
+router.patch('/reAuction/:itemId', verifyToken, async(req, res)=>{
+    const postData = new itemsModel({
+        Endtime:req.body.Endtime,
+    })
+    try{
+        const getItem = await itemsModel.findById(req.params.itemId)
+        
+        var duration = calculateTimeLeft(getItem)
+
+        if (duration._milliseconds > 0 ){
+            return res.send("Cannot be reauctioned while bidding is in progress")
+        }
+        else if (getItem.isSold == true){
+            return res.send("Cannot reauction sold item")
+        }
+   
+
+        const updatePostById = await itemsModel.findByIdAndUpdate(req.params.itemId,
+            {
+                Endtime:postData.Endtime
+            }
+        )
+
+        duration = calculateTimeLeft(updatePostById)
+        
+        const PostAuction = new auctionsModel({
+            ItemInformation: updatePostById,
+            timeleft: setTimeLeft(duration)
+        })       
+        await PostAuction.save()
+        res.send(PostAuction)
+    }catch(err){
+        res.send({message:err})
+    }
+})
+
 //Do get items by author
 
-//Do get items by category
+
 
 
 
