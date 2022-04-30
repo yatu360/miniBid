@@ -50,9 +50,14 @@ const timerOperations ={
             else{
                 await timerOperations.auctionEnd(auctionItem)
             }
+    },
+
+    async openAuctionTimerUpdate(){
+        const auctionItems = await auctionsModel.find({isOpen: true}).populate('ItemInformation')
+        for(const auctionItem of auctionItems){
+            await timerOperations.updateTimer(auctionItem.ItemInformation, auctionItem)
+        }
     }
-
-
 }
 
 module.exports = timerOperations;

@@ -6,7 +6,7 @@ const auctionsModel = require('../models/Auctions')
 
 const verifyToken = require('../verifyToken')
 
-const { calculateTimeLeft, updateTimer } = require('../helper/TimerOperations')
+const { calculateTimeLeft, updateTimer, openAuctionTimerUpdate } = require('../helper/TimerOperations')
 const { setTimeLeft } = require('../helper/TimerOperations')
 const {bidValidations} = require('../helper/BidOperations')
 
@@ -14,12 +14,8 @@ const {bidValidations} = require('../helper/BidOperations')
 //Get all Auctions
 router.get('/getOpenAuctions', verifyToken, async(req, res)=>{
     try{
-        const auctionItems = await auctionsModel.find({isOpen: true})
-
-        for(const auctionItem of auctionItems){
-            const item = await itemsModel.findById(auctionItem.ItemInformation)
-            await updateTimer(item, auctionItem)
-        }
+        await openAuctionTimerUpdate();
+        
         return res.send(await auctionsModel.find({isOpen: true}).select('-highestBidder'))
 
     }catch(err){
