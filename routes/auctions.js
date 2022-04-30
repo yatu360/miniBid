@@ -90,7 +90,4 @@ router.get('/getBidHistory/:auctionId', verifyToken, async(req, res)=>{
     }  
 })
 
-
-
-
 module.exports = router
