@@ -113,7 +113,17 @@ router.patch('/reAuction/:itemId', verifyToken, async(req, res)=>{
     }
 })
 
-//Do get items by author
+router.get('/getItemsByOwner/:userid', verifyToken, async(req, res)=>{
+    try{
+        
+        await openAuctionTimerUpdate()
+
+        return res.send(await itemsModel.find({Owner:{_id:req.params.userid}}))
+
+    }catch(err){
+    res.send({message:err})
+    }
+})
 
 
 
