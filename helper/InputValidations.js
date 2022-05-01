@@ -38,7 +38,7 @@ const inputValidations = {
     /**
      * Helper method which validates if an item can be re-auctioned. If
      * validity false, the function returns an error message. If validity
-     * is return, nothing is returned.
+     * is true, nothing is returned.
      * @param user_id - The id of the user who is trying to re-auction
      * an item
      * @param getItem - The dataset of the the item that is to be re-
