@@ -30,6 +30,14 @@ router.post("/addItem", verifyToken, async (req, res) => {
     // Calls helper method to calculate the time left
     const duration = calculateTimeLeft(req.body);
 
+    if (duration._milliseconds<60000){
+        return res.status(400).
+        send(
+            {message: 'Please  enter in end time greater' +
+            + 'than 1 minute in advance'}
+            );
+    }
+
     // Creates and auction object
     const PostAuct = new auctionsModel({
         ItemInformation: postData,
@@ -94,7 +102,6 @@ router.patch("/reAuction/:itemId", verifyToken, async (req, res) => {
     });
     try {
         const getItem = await itemsModel.findById(req.params.itemId);
-
         var duration = calculateTimeLeft(getItem);
 
         //Checks if item can be re-auctioned
@@ -115,7 +122,6 @@ router.patch("/reAuction/:itemId", verifyToken, async (req, res) => {
                 Endtime: postData.Endtime,
             }
         );
-
         duration = calculateTimeLeft(postData);
 
         const postAuction = new auctionsModel({
