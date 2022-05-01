@@ -33,8 +33,7 @@ router.post("/addItem", verifyToken, async (req, res) => {
     if (duration._milliseconds<60000){
         return res.status(400).
         send(
-            {message: 'Please  enter in end time greater' +
-            + 'than 1 minute in advance'}
+            {message: 'Please  enter in endtime greater than 1 minute in advance'}
             );
     }
 

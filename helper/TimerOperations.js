@@ -71,8 +71,8 @@ const timerOperations = {
     },
 
     /**
-     * This helper method updates the criteria stored in the auction
-     * object with updated timer counter
+     * This helper method updates the data stored in the auction
+     * object with the updated timer counter
      * @param item - Contains item information 
      * @param auctionItem - Contain the auction item information
      */
