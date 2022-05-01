@@ -49,6 +49,10 @@ router.post("/register", async (req, res) => {
     }
 });
 
+/**
+ * Post - login API - Checks if users input details are correct then generates
+ * auth token for the user to access and use the application
+ */
 router.post("/login", async (req, res) => {
     // Validation 1 to check user input
     const { error } = loginValidation(req.body);
