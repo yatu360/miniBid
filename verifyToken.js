@@ -1,5 +1,7 @@
 const jsonWebToken = require('jsonwebtoken')
 
+// This function checks if the token is valid when the
+// user tries to access the APIs
 function auth(req, res, next){
     const token = req.header('auth-token')
     if(!token){

@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+
+/**
+ * The JSON object Schema for defining the structurre and contents of the 
+ * auction database object
+ */
 const AuctionsSchema = mongoose.Schema({
     //'author':{type:mongoose.Schema.Types.ObjectId,ref:'UserCollection'},
     ItemInformation: { type: mongoose.Schema.Types.ObjectId, ref: "items" },
@@ -9,6 +14,7 @@ const AuctionsSchema = mongoose.Schema({
     timeleft: { type: String },
     BidHistory: [
         {
+            Bidder: { type: String },
             amount: { type: Number },
             BidDate: { type: Date, default: Date.now },
         },

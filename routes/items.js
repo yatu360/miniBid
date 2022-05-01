@@ -14,8 +14,11 @@ const {
 
 const { reAuctionValidations } = require("../helper/InputValidations");
 
-//Post (Create Data)
+/**
+ * Post- addItem API - adds item into the apps inventory
+ */
 router.post("/addItem", verifyToken, async (req, res) => {
+    // Creates an item object
     const postData = new itemsModel({
         ItemTitle: req.body.ItemTitle,
         isItemConditionNew: req.body.isItemConditionNew,
@@ -24,13 +27,17 @@ router.post("/addItem", verifyToken, async (req, res) => {
         Owner: req.user,
     });
 
+    // Calls helper method to calculate the time left
     const duration = calculateTimeLeft(req.body);
 
+    // Creates and auction object
     const PostAuct = new auctionsModel({
         ItemInformation: postData,
         timeleft: setTimeLeft(duration),
     });
 
+    // Saves the item and auction object in the
+    // relavant databases
     try {
         const postToSave = await postData.save();
         await PostAuct.save();
@@ -40,9 +47,12 @@ router.post("/addItem", verifyToken, async (req, res) => {
     }
 });
 
-//Get all items
+/**
+ * Get - getAllItems API - Sends all items stored in the database
+ */
 router.get("/getAllItems", verifyToken, async (req, res) => {
     try {
+        await openAuctionTimerUpdate();
         const items = await itemsModel.find();
         res.send(items);
     } catch (err) {
@@ -50,9 +60,12 @@ router.get("/getAllItems", verifyToken, async (req, res) => {
     }
 });
 
-//Get Item by id
+/**
+ * Get - getItemById API - Sends item with id from params
+ */
 router.get("/getItemById/:itemId", verifyToken, async (req, res) => {
     try {
+        await openAuctionTimerUpdate();
         const getItem = await itemsModel.findById(req.params.itemId);
         res.send(getItem);
     } catch (err) {
@@ -60,7 +73,9 @@ router.get("/getItemById/:itemId", verifyToken, async (req, res) => {
     }
 });
 
-//Get Item by id
+/**
+ * Get - getSoldItems API - Sends all sold items
+ */
 router.get("/getSoldItems", verifyToken, async (req, res) => {
     try {
         await openAuctionTimerUpdate();
@@ -70,6 +85,9 @@ router.get("/getSoldItems", verifyToken, async (req, res) => {
     }
 });
 
+/**
+ * Patch - reAuction API - Reauctions unsold item
+ */
 router.patch("/reAuction/:itemId", verifyToken, async (req, res) => {
     const postData = new itemsModel({
         Endtime: req.body.Endtime,
@@ -79,6 +97,7 @@ router.patch("/reAuction/:itemId", verifyToken, async (req, res) => {
 
         var duration = calculateTimeLeft(getItem);
 
+        //Checks if item can be re-auctioned
         const message = reAuctionValidations(
             req.user._id,
             getItem,
@@ -97,21 +116,25 @@ router.patch("/reAuction/:itemId", verifyToken, async (req, res) => {
             }
         );
 
-        duration = calculateTimeLeft(updatePostById);
+        duration = calculateTimeLeft(postData);
 
-        const PostAuction = new auctionsModel({
+        const postAuction = new auctionsModel({
             ItemInformation: updatePostById,
             timeleft: setTimeLeft(duration),
         });
-        await PostAuction.save();
-        res.send(PostAuction);
+        await postAuction.save();
+        res.send(postAuction);
     } catch (err) {
         res.send({ message: err });
     }
 });
 
+/**
+ * Get - getItemsByOwner API - Send all items uploaded by a particular user
+ */
 router.get("/getItemsByOwner/:userid", verifyToken, async (req, res) => {
     try {
+        // Updates timer to get the updated information
         await openAuctionTimerUpdate();
 
         return res.send(

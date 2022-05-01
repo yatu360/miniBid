@@ -2,7 +2,18 @@ const auctionsModel = require("../models/Auctions");
 const itemsModel = require("../models/Items");
 const moment = require("moment");
 
+/**
+ * Class contains helper methods which aid in the
+ * calculation of the timer left for the auction.
+ */
 const timerOperations = {
+
+    /**
+     * This helper method is called when the auction ends
+     * and sets the data for the ended auction.
+     * @param auction - Contains the item's auction
+     * data. 
+     */
     async auctionEnd(auction) {
         await auctionsModel.updateOne(
             { _id: auction._id },
@@ -30,6 +41,12 @@ const timerOperations = {
         }
     },
 
+    /**
+     * This helper method is called to format the time-
+     * left in a string format
+     * @param duration Contains calculated time information
+     * @returns String format of time left
+     */
     setTimeLeft(duration) {
         return (
             "Years:" + duration._data.years +
@@ -41,12 +58,24 @@ const timerOperations = {
         );
     },
 
+    /**
+     * This helper method calculates the timeleft of the 
+     * auction. This is done using the moment library. 
+     * @param item Contains item information  
+     * @returns Calculated time as a moment object.
+     */
     calculateTimeLeft(item) {
-        var start_date = moment();
-        var end_date = moment(item.Endtime, "YYYY-MM-DD HH:mm:ss");
-        return moment.duration(end_date.diff(start_date));
+        var now_time = moment();
+        var end_time = moment(item.Endtime, "YYYY-MM-DD HH:mm:ss");
+        return moment.duration(end_time.diff(now_time));
     },
 
+    /**
+     * This helper method updates the criteria stored in the auction
+     * object with updated timer counter
+     * @param item - Contains item information 
+     * @param auctionItem - Contain the auction item information
+     */
     async updateTimer(item, auctionItem) {
         const duration = timerOperations.calculateTimeLeft(item);
         if (duration._milliseconds > 0) {
@@ -58,12 +87,15 @@ const timerOperations = {
                     },
                 }
             );
-            console.log(timerOperations.setTimeLeft(duration));
         } else {
             await timerOperations.auctionEnd(auctionItem);
         }
     },
 
+    /**
+     * This helper method finds all the open auction then 
+     * iterates through each one to update their timers
+     */
     async openAuctionTimerUpdate() {
         const auctionItems = await auctionsModel
             .find({ isOpen: true })

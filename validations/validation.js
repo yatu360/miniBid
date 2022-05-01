@@ -1,5 +1,6 @@
 const joi = require("joi");
 
+// Checks if registration details are in correct format
 const registerValidation = (data) => {
     const schemaValidation = joi.object({
         username: joi.string().required().min(3).max(256),
@@ -9,6 +10,7 @@ const registerValidation = (data) => {
     return schemaValidation.validate(data);
 };
 
+// Checks if login details are in correct format
 const loginValidation = (data) => {
     const schemaValidation = joi.object ({
         email: joi.string().required().min(6).max(256).email(),

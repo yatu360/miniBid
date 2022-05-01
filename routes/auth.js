@@ -1,5 +1,4 @@
 const express = require("express");
-const res = require("express/lib/response");
 const router = express.Router();
 
 const User = require("../models/Users");
@@ -12,14 +11,17 @@ const bcryptJs = require("bcryptjs");
 
 const jsonWebToken = require("jsonwebtoken");
 
+/**
+ * Post - register API - Registers the users into the app
+ */
 router.post("/register", async (req, res) => {
-    //Validation 1 to check user input
+    // Validation 1 to check user input
     const { error } = registerValidation(req.body);
     if (error) {
         return res.status(400).send({ message: error["details"][0]["message"] });
     }
 
-    //Validation 2 to check if user exists!
+    // Validation 2 to check if user exists!
     const userExist = await User.findOne({ email: req.body.email });
     const usernameExist = await User.findOne({ username: req.body.username });
     if (userExist) {
@@ -48,19 +50,19 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-    //Validation 1 to check user input
+    // Validation 1 to check user input
     const { error } = loginValidation(req.body);
     if (error) {
         return res.status(400).send({ message: error["details"][0]["message"] });
     }
 
-    //Validation 2 to check if user exists!
+    // Validation 2 to check if user exists!
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
         return res.status(400).send({ message: "User does not exist" });
     }
 
-    //Validation 3 to check user password
+    // Validation 3 to check user password
     const passwordValidation = await bcryptJs.compare(
         req.body.password,
         user.password
@@ -69,7 +71,7 @@ router.post("/login", async (req, res) => {
         return res.status(400).send({ message: "Password incorrect" });
     }
 
-    //Generate Auth token
+    // Generate Auth token
     const token = jsonWebToken.sign(
         { _id: user._id, username: user.username, email: user.email },
         process.env.TOKEN_SECRET

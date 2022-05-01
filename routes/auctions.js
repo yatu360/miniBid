@@ -14,7 +14,10 @@ const {
 
 const { bidValidations } = require("../helper/InputValidations");
 
-//Get all Auctions
+/**
+ * Get - getOpenAuctions API - Sends all the auctions which are still
+ * open and inprogress
+ */
 router.get("/getOpenAuctions", verifyToken, async (req, res) => {
     try {
         await openAuctionTimerUpdate();
@@ -27,7 +30,10 @@ router.get("/getOpenAuctions", verifyToken, async (req, res) => {
     }
 });
 
-//Get auctioned item details
+/**
+ * Get - getAuction API - Sends the auction information of the id received
+ * in the params
+ */
 router.get("/getAuction/:auctionId", verifyToken, async (req, res) => {
     try {
         const auctionItem = await auctionsModel
@@ -46,7 +52,10 @@ router.get("/getAuction/:auctionId", verifyToken, async (req, res) => {
     }
 });
 
-//Update
+/**
+ * Patch - bid API - Places a bid for the auction with id 
+ * received in the params
+ */
 router.patch("/bid/:auctionId", verifyToken, async (req, res) => {
     const bidData = new auctionsModel({
         highestBid: req.body.highestBid,
@@ -58,7 +67,13 @@ router.patch("/bid/:auctionId", verifyToken, async (req, res) => {
 
         const duration = calculateTimeLeft(getAuction.ItemInformation);
 
-        const message = bidValidations(req.user._id, getAuction, bidData, duration);
+        // Checks if the bid is valid and can be placed
+        const message = bidValidations(
+            req.user._id,
+            getAuction,
+            bidData,
+            duration
+        );
 
         if (message) {
             return res.status(400).send({ message: message });
@@ -74,7 +89,7 @@ router.patch("/bid/:auctionId", verifyToken, async (req, res) => {
                 },
                 $push: {
                     BidHistory: {
-                        Bidder: req.user.username,
+                        Bidder: req.user._id,
                         amount: req.body.highestBid,
                     },
                 },
@@ -86,7 +101,10 @@ router.patch("/bid/:auctionId", verifyToken, async (req, res) => {
     }
 });
 
-//Get auctioned item details
+/**
+ * Get - getBidHistory API - Retrives the bid history of the auction with id
+ * embedded into the params
+ */
 router.get("/getBidHistory/:auctionId", verifyToken, async (req, res) => {
     try {
         const auctionItem = await auctionsModel.findById(req.params.auctionId);

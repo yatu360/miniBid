@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 
+/**
+ * The JSON object Schema for defining the structurre and contents of the 
+ * items database object
+ */
 const ItemsSchema = mongoose.Schema({
     ItemTitle: { type: String, required: true },
     ItemRegTimeStamp: { type: Date, default: Date.now },
